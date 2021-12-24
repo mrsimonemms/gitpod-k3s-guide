@@ -1,0 +1,7 @@
+.idea
+.DS_Store
+Thumbs.db
+tmp
+.env
+gitpod-config.yaml
+gitpod.yaml
