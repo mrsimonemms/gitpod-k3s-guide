@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: https-certificates
+spec:
+  secretName: https-certificates
+  issuerRef:
+    name: gitpod-issuer
+    kind: ClusterIssuer
+  dnsNames:
+    - $DOMAIN
+    - "*.$DOMAIN"
+    - "*.ws.$DOMAIN"
