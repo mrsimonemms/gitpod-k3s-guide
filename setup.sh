@@ -44,7 +44,12 @@ function setup_managed_dns() {
 }
 
 function installer() {
-  docker run -it --rm -v="${PWD}:${GITPOD_REPO_ROOT}" "eu.gcr.io/gitpod-core-dev/build/installer:${INSTALLER_VERSION}" "$@"
+  docker run -it --rm \
+    -v="${HOME}/.kube:${HOME}/.kube" \
+    -v="${PWD}:${PWD}" \
+    -w="${PWD}" \
+    "eu.gcr.io/gitpod-core-dev/build/installer:${INSTALLER_VERSION}" \
+    "${@}"
 }
 
 function install() {
