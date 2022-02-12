@@ -85,6 +85,12 @@ function install() {
         --server-user "${USER}" \
         --user "${USER}"
     fi
+
+    echo "Install linux-headers"
+    ssh-keyscan "${IP}" >> ~/.ssh/known_hosts
+    ssh "${USER}@${IP}" "sudo apt-get update"
+    # shellcheck disable=SC2029
+    ssh "${USER}@${IP}" "sudo apt-get install -y linux-headers-$(uname -r) linux-headers-generic"
   done
 
   kubectl get nodes -o wide
@@ -114,7 +120,6 @@ function install() {
   yq e -i ".domain = \"${DOMAIN}\"" "${CONFIG_FILE}"
   yq e -i '.workspace.runtime.containerdRuntimeDir = "/run/k3s/containerd/io.containerd.runtime.v2.task/k8s.io"' "${CONFIG_FILE}"
   yq e -i '.workspace.runtime.containerdSocket = "/run/k3s/containerd/containerd.sock"' "${CONFIG_FILE}"
-  yq e -i '.workspace.runtime.fsShiftMethod = "fuse"' "${CONFIG_FILE}"
 
   installer render --config="${CONFIG_FILE}" > gitpod.yaml
 
