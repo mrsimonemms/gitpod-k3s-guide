@@ -58,11 +58,34 @@ function install() {
   mkdir -p "${HOME}/.kube"
 
   echo "Install k3s with k3sup"
-  k3sup install \
-    --ip "${IP}" \
-    --local-path "${HOME}/.kube/config" \
-    --k3s-extra-args="--disable traefik --node-label=gitpod.io/workload_meta=true --node-label=gitpod.io/workload_ide=true --node-label=gitpod.io/workload_workspace_services=true --node-label=gitpod.io/workload_workspace_regular=true --node-label=gitpod.io/workload_workspace_headless=true" \
-    --user "${USER}"
+  SERVER_IP=
+  JOIN_NODE=0
+  for IP in ${IP_LIST//,/ }; do
+    if [ "${JOIN_NODE}" -eq 0 ]; then
+      echo "Installing k3s to node ${IP}"
+
+      k3sup install \
+        --cluster \
+        --ip "${IP}" \
+        --local-path "${HOME}/.kube/config" \
+        --k3s-extra-args="--disable traefik --node-label=gitpod.io/workload_meta=true --node-label=gitpod.io/workload_ide=true --node-label=gitpod.io/workload_workspace_services=true --node-label=gitpod.io/workload_workspace_regular=true --node-label=gitpod.io/workload_workspace_headless=true" \
+        --user "${USER}"
+
+      # Set any future nodes to join this node
+      JOIN_NODE=1
+      SERVER_IP="${IP}"
+    else
+      echo "Joining node ${IP} to ${SERVER_IP}"
+
+      k3sup join \
+        --ip "${IP}" \
+        --k3s-extra-args="--disable traefik --node-label=gitpod.io/workload_meta=true --node-label=gitpod.io/workload_ide=true --node-label=gitpod.io/workload_workspace_services=true --node-label=gitpod.io/workload_workspace_regular=true --node-label=gitpod.io/workload_workspace_headless=true" \
+        --server \
+        --server-ip "${SERVER_IP}" \
+        --server-user "${USER}" \
+        --user "${USER}"
+    fi
+  done
 
   kubectl get nodes -o wide
 
@@ -104,7 +127,9 @@ function uninstall() {
   read -p "Are you sure you want to delete: Gitpod (y/n)?" -n 1 -r
   echo ""
   if [[ $REPLY =~ ^[Yy]$ ]]; then
-    ssh "${USER}@${IP}" k3s-uninstall.sh
+    for IP in ${IP_LIST//,/ }; do
+      ssh "${USER}@${IP}" k3s-uninstall.sh
+    done
   fi
 }
 
