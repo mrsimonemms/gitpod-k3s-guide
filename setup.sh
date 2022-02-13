@@ -91,6 +91,7 @@ function install() {
   yq e -i ".domain = \"${DOMAIN}\"" "${CONFIG_FILE}"
   yq e -i '.workspace.runtime.containerdRuntimeDir = "/run/k3s/containerd/io.containerd.runtime.v2.task/k8s.io"' "${CONFIG_FILE}"
   yq e -i '.workspace.runtime.containerdSocket = "/run/k3s/containerd/containerd.sock"' "${CONFIG_FILE}"
+  yq e -i '.workspace.runtime.fsShiftMethod = "fuse"' "${CONFIG_FILE}"
 
   installer render --config="${CONFIG_FILE}" > gitpod.yaml
 
