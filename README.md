@@ -9,7 +9,8 @@ Before starting the installation process, you need:
 - A [Cloudflare](https://cloudflare.com) account with your domain name configured
 - [Docker](https://docs.docker.com/engine/install) installed on your machine, or better, a [Gitpod workspace](https://github.com/MrSimonEmms/gitpod-k3s-guide) :)
 
-This has been tested on bare-metal Ubuntu and [Multipass](https://multipass.run).
+This has been tested on bare-metal Ubuntu and [Multipass](https://multipass.run). Multi-node clusters
+are supported - it is assumed that all nodes are configured identically.
 
 **To start the installation, execute:**
 
