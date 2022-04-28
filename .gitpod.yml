@@ -19,6 +19,8 @@ tasks:
       sudo apt-get install -y gettext-base
       # Install yq
       brew install yq
+      # Install KOTS
+      curl https://kots.io/install | bash
 
 vscode:
   extensions:

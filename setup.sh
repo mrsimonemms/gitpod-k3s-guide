@@ -43,15 +43,6 @@ function setup_managed_dns() {
   esac
 }
 
-function installer() {
-  docker run -it --rm \
-    -v="${HOME}/.kube:${HOME}/.kube" \
-    -v="${PWD}:${PWD}" \
-    -w="${PWD}" \
-    "eu.gcr.io/gitpod-core-dev/build/installer:${INSTALLER_VERSION}" \
-    "${@}"
-}
-
 function install() {
   echo "Installing Gitpod to k3s cluster"
 
@@ -111,20 +102,53 @@ function install() {
 
   setup_managed_dns
 
-  envsubst < "${DIR}/assets/certificate.yaml" | kubectl apply -f -
+  cat << EOF
 
-  local CONFIG_FILE="${DIR}/gitpod-config.yaml"
 
-  installer init > "${CONFIG_FILE}"
+==========================
+🎉🥳🔥🧡🚀
 
-  yq e -i ".domain = \"${DOMAIN}\"" "${CONFIG_FILE}"
-  yq e -i '.workspace.runtime.containerdRuntimeDir = "/run/k3s/containerd/io.containerd.runtime.v2.task/k8s.io"' "${CONFIG_FILE}"
-  yq e -i '.workspace.runtime.containerdSocket = "/run/k3s/containerd/containerd.sock"' "${CONFIG_FILE}"
+Your cloud infrastructure is ready to install Gitpod. Please visit
+https://www.gitpod.io/docs/self-hosted/latest/getting-started#step-4-install-gitpod
+for your next steps.
 
-  installer render --config="${CONFIG_FILE}" > gitpod.yaml
+=================
+Config Parameters
+=================
 
-  echo "Installing Gitpod"
-  kubectl apply -f gitpod.yaml
+Domain Name: ${DOMAIN}
+
+Registry
+========
+In cluster: true
+
+Database
+========
+In cluster: true
+
+Storage
+=======
+In cluster: true
+
+TLS Certificates
+================
+Issuer name: gitpod-issuer
+Issuer type: Cluster issuer
+EOF
+
+  if [ -n "${MANAGED_DNS_PROVIDER}" ]; then
+  cat << EOF
+===========
+DNS Records
+===========
+
+Domain Name: ${DOMAIN}
+A Records:
+${DOMAIN} - ${SERVER_IP}
+*.${DOMAIN} - ${SERVER_IP}
+*.ws.${DOMAIN} - ${SERVER_IP}
+EOF
+  fi
 }
 
 function uninstall() {
