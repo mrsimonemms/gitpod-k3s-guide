@@ -81,7 +81,7 @@ function install() {
     ssh-keyscan "${IP}" >> ~/.ssh/known_hosts
     ssh "${USER}@${IP}" "sudo apt-get update"
     # shellcheck disable=SC2029
-    ssh "${USER}@${IP}" "sudo apt-get install -y linux-headers-$(uname -r) linux-headers-generic"
+    ssh "${USER}@${IP}" 'sudo apt-get install -y linux-headers-$(uname -r) linux-headers-generic'
   done
 
   kubectl get nodes -o wide
