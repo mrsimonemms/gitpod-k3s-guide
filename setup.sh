@@ -25,15 +25,53 @@ function check_dependencies() {
   fi
 }
 
+function install_external_dns() {
+  # set-file didn't work weirdly so have merged the params
+  params=""
+  for i in ${@:2}
+  do
+    params="${params} --set ${i}"
+  done
+
+  helm upgrade \
+    --atomic \
+    --cleanup-on-fail \
+    --create-namespace \
+    --install \
+    --namespace external-dns \
+    --repo https://charts.bitnami.com/bitnami \
+    --reset-values \
+    --set provider="${1}" \
+    ${params} \
+    --set logFormat=json \
+    --wait \
+    external-dns \
+    external-dns
+}
+
 function setup_managed_dns() {
   case "${MANAGED_DNS_PROVIDER:-}" in
     cloudflare )
       echo "Installing Cloudflare managed DNS"
+
+      echo "Testing credentials"
+
+      if ! curl -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+        --fail \
+        -H "Authorization: Bearer ${CLOUDFLARE_API_KEY}" \
+        -H "Content-Type:application/json"; then
+          echo "Invalid Cloudflare token"
+          exit 1
+      fi
+
       kubectl create secret generic cloudflare-api-token \
         -n cert-manager \
         --from-literal=api-token="${CLOUDFLARE_API_KEY}" \
         --dry-run=client -o yaml | \
         kubectl replace --force -f -
+
+      echo "Installing external-dns for Cloudflare"
+      install_external_dns cloudflare "cloudflare.apiToken=${CLOUDFLARE_API_KEY}"
 
       envsubst < "${DIR}/assets/cloudflare.yaml" | kubectl apply -f -
       ;;
@@ -136,20 +174,6 @@ TLS Certificates
 Issuer name: gitpod-issuer
 Issuer type: Cluster issuer
 EOF
-
-  if [ -n "${MANAGED_DNS_PROVIDER}" ]; then
-  cat << EOF
-===========
-DNS Records
-===========
-
-Domain Name: ${DOMAIN}
-A Records:
-${DOMAIN} - ${SERVER_IP}
-*.${DOMAIN} - ${SERVER_IP}
-*.ws.${DOMAIN} - ${SERVER_IP}
-EOF
-  fi
 }
 
 function uninstall() {
