@@ -138,15 +138,16 @@ EOF
 
   if [ -n "${MANAGED_DNS_PROVIDER}" ]; then
   cat << EOF
+
 ===========
 DNS Records
 ===========
 
 Domain Name: ${DOMAIN}
 A Records:
-${DOMAIN} - ${SERVER_IP}
-*.${DOMAIN} - ${SERVER_IP}
-*.ws.${DOMAIN} - ${SERVER_IP}
+  ${DOMAIN} - ${SERVER_IP}
+  *.${DOMAIN} - ${SERVER_IP}
+  *.ws.${DOMAIN} - ${SERVER_IP}
 EOF
   fi
 }
