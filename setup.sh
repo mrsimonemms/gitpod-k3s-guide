@@ -37,6 +37,9 @@ function setup_managed_dns() {
 
       envsubst < "${DIR}/assets/cloudflare.yaml" | kubectl apply -f -
       ;;
+    selfsigned )
+      echo "A self-signed certificate will be created"
+      ;;
     * )
       echo "Not installing managed DNS"
       ;;
@@ -52,6 +55,21 @@ function install() {
   SERVER_IP=
   JOIN_NODE=0
   for IP in ${IP_LIST//,/ }; do
+    echo "Set the k3s config template"
+    ssh-keyscan "${IP}" >> ~/.ssh/known_hosts
+
+    if [ "${MANAGED_DNS_PROVIDER:-}" == "selfsigned" ]; then
+      cat << EOF > ./registries.yaml
+configs:
+  "reg.${DOMAIN}:20000":
+    tls:
+      insecure_skip_verify: true
+EOF
+      scp ./registries.yaml "${USER}@${IP}:/tmp/registries.yaml"
+      ssh "${USER}@${IP}" "sudo mkdir -p /etc/rancher/k3s"
+      ssh "${USER}@${IP}" "sudo mv /tmp/registries.yaml /etc/rancher/k3s/registries.yaml"
+    fi
+
     if [ "${JOIN_NODE}" -eq 0 ]; then
       echo "Installing k3s to node ${IP}"
 
@@ -78,7 +96,6 @@ function install() {
     fi
 
     echo "Install linux-headers"
-    ssh-keyscan "${IP}" >> ~/.ssh/known_hosts
     ssh "${USER}@${IP}" "sudo apt-get update"
     # shellcheck disable=SC2029
     ssh "${USER}@${IP}" 'sudo apt-get install -y linux-headers-$(uname -r) linux-headers-generic'
@@ -132,11 +149,25 @@ In cluster: true
 
 TLS Certificates
 ================
+EOF
+
+case "${MANAGED_DNS_PROVIDER:-}" in
+  cloudflare )
+    cat << EOF
+Service: Cloudflare
 Issuer name: gitpod-issuer
 Issuer type: Cluster issuer
 EOF
+    ;;
+  selfsigned )
+    echo "Service: Self-signed"
+    ;;
+  * )
+    echo "-- Not configured --"
+    ;;
+esac
 
-  if [ -n "${MANAGED_DNS_PROVIDER}" ]; then
+  if [ -n "${MANAGED_DNS_PROVIDER:-}" ]; then
   cat << EOF
 
 ===========

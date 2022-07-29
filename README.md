@@ -2,12 +2,19 @@
 
 Before starting the installation process, you need:
 
-- An Ubuntu machine with SSH credentials
+- An Ubuntu 20.04 machine with SSH credentials
   - This must have ports 22 (SSH), 80 (HTTP), 443 (HTTPS) and 6443 (Kubernetes) exposed
 - A `.env` file with basic details about the environment.
   - We provide an example of such file [here](.env.example)
-- A [Cloudflare](https://cloudflare.com) account with your domain name configured
 - [Docker](https://docs.docker.com/engine/install) installed on your machine, or better, a [Gitpod workspace](https://github.com/MrSimonEmms/gitpod-k3s-guide) :)
+
+## DNS and TLS
+
+There are a number of options you may use for your DNS and TLS certificates:
+
+- [Cloudflare](https://cloudflare.com) - certificate verified via LetsEncrypt
+- A self-signed certificate - you will need to install your CA certificate (full instructions in KOTS dashboard)
+- None - you can do this manually
 
 This has been tested on bare-metal Ubuntu and [Multipass](https://multipass.run). Multi-node clusters
 are supported - it is assumed that all nodes are configured identically.
