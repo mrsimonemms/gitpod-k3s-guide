@@ -5,3 +5,4 @@ tmp
 .env
 gitpod-config.yaml
 gitpod.yaml
+registries.yaml
