@@ -8,6 +8,47 @@ Before starting the installation process, you need:
   - We provide an example of such file [here](.env.example)
 - [Docker](https://docs.docker.com/engine/install) installed on your machine, or better, a [Gitpod workspace](https://github.com/MrSimonEmms/gitpod-k3s-guide) :)
 
+<details>
+<summary>Example VM on GCP</summary>
+
+Create GCP VM with Ubuntu 20.04 with 4 cores, 16GB of RAM, and 100GB of storage:
+
+```bash
+gcloud compute instances create gitpod-x509 \
+  --image=ubuntu-2004-focal-v20220712 \
+  --image-project=ubuntu-os-cloud \
+  --machine-type=n2-standard-4 \
+  --boot-disk-size=100GB \
+  --tags k3s
+# Created [https://www.googleapis.com/compute/v1/projects/adrien-self-hosted-testing-5k4/zones/us-west1-c/instances/gitpod-k3s].
+# NAME         ZONE        MACHINE_TYPE   PREEMPTIBLE  INTERNAL_IP  EXTERNAL_IP     STATUS
+# gitpod-k3s  us-west1-c  n2-standard-4               10.138.0.6   169.254.87.220  RUNNING
+```
+
+A firewall rule must be added to allow the current system to connect to the Kubernetes API. As we
+don't want to expose the Kubernetes API to the entire Internet this firewall rule allows the current
+host to connect to the k3s VM.
+
+**Note**: If you're using a remote workspace (such as Gitpod) you'll need to include the public IP
+address the Gitpod instance as well as the public IP address of your local machine as the source ranges
+of this firewall rule.
+
+```bash
+gcloud compute firewall-rules create k3s \
+  --source-ranges="$(curl -s ifconfig.me)/32" \
+  --allow=tcp:6443,tcp:443,tcp:80 \
+  --target-tags=k3s
+```
+
+```shell
+gcloud compute config-ssh
+# You should now be able to use ssh/scp with your instances.
+# For example, try running:
+#
+# ssh gitpod-k3s.us-west1-c.adrien-self-hosted-testing-5k4
+```
+</details>
+
 ## DNS and TLS
 
 There are a number of options you may use for your DNS and TLS certificates:
@@ -71,3 +112,16 @@ Remove k3s from your machine by running:
 ```shell
 ./setup.sh uninstall
 ```
+
+If you created any cloud resources you can delete them with the following:
+
+- GCP
+  <details>
+  <summary>GCP resource cleanup</summary>
+
+  ```shell
+  gcloud compute firewall-rules delete k3s --quiet
+  gcloud compute instances delete gitpod-k3s --quiet
+  ```
+  </details>
+
