@@ -5,6 +5,8 @@ github:
 
 tasks:
   - before: |
+      # Run tasks in tmp folder
+      cd /tmp
       # Install kubectl - https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
       curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
       sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
@@ -21,6 +23,8 @@ tasks:
       brew install yq
       # Install KOTS
       curl https://kots.io/install | bash
+      # Back to workspace
+      cd -
 
 vscode:
   extensions:
