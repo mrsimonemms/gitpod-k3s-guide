@@ -66,30 +66,46 @@ EOF
       ssh "${USER}@${IP}" "sudo mv /tmp/registries.yaml /etc/rancher/k3s/registries.yaml"
     fi
 
+    EXTRA_ARGS="--node-label=gitpod.io/workload_meta=true --node-label=gitpod.io/workload_ide=true --node-label=gitpod.io/workload_workspace_services=true --node-label=gitpod.io/workload_workspace_regular=true --node-label=gitpod.io/workload_workspace_headless=true"
+
     if [ "${JOIN_NODE}" -eq 0 ]; then
       echo "Installing k3s to node ${IP}"
 
       k3sup install \
-        --cluster \
+        --cluster="${HA_CLUSTER}" \
         --ip "${IP}" \
         --local-path "${HOME}/.kube/config" \
-        --k3s-extra-args="--disable traefik --node-label=gitpod.io/workload_meta=true --node-label=gitpod.io/workload_ide=true --node-label=gitpod.io/workload_workspace_services=true --node-label=gitpod.io/workload_workspace_regular=true --node-label=gitpod.io/workload_workspace_headless=true" \
+        --k3s-extra-args="--disable traefik ${EXTRA_ARGS}" \
         --user "${USER}"
 
       # Set any future nodes to join this node
-      JOIN_NODE=1
       SERVER_IP="${IP}"
     else
-      echo "Joining node ${IP} to ${SERVER_IP}"
+      echo "Joining node ${IP} to ${SERVER_IP} - node ${JOIN_NODE}"
+
+      USE_SERVER=false
+      NODE_EXTRA_ARGS="${EXTRA_ARGS}"
+      if [ "${HA_CLUSTER}" = "true" ]; then
+        # If HA, require two control planes
+
+        if [ "${JOIN_NODE}" -eq 1 ]; then
+          echo "Setting as server"
+          USE_SERVER=true
+          NODE_EXTRA_ARGS="--disable traefik ${NODE_EXTRA_ARGS}"
+        fi
+      fi
 
       k3sup join \
         --ip "${IP}" \
-        --k3s-extra-args="--disable traefik --node-label=gitpod.io/workload_meta=true --node-label=gitpod.io/workload_ide=true --node-label=gitpod.io/workload_workspace_services=true --node-label=gitpod.io/workload_workspace_regular=true --node-label=gitpod.io/workload_workspace_headless=true" \
-        --server \
+        --k3s-extra-args="${NODE_EXTRA_ARGS}" \
+        --server="${USE_SERVER}" \
         --server-ip "${SERVER_IP}" \
         --server-user "${USER}" \
         --user "${USER}"
     fi
+
+    # Increment the JOIN_NODE
+    ((JOIN_NODE=JOIN_NODE+1))
 
     echo "Install linux-headers"
     ssh "${USER}@${IP}" "sudo apt-get update"
