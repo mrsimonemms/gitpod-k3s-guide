@@ -6,6 +6,9 @@ DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
 
 # Set default values
 HA_CLUSTER="${HA_CLUSTER:-false}"
+INSTALL_MONITORING="${INSTALL_MONITORING:-false}"
+MONITORING_NAMESPACE=monitoring
+GITPOD_NAMESPACE="${GITPOD_NAMESPACE:-gitpod}"
 
 function check_dependencies() {
   if ! command -v k3sup &> /dev/null; then
@@ -43,6 +46,25 @@ function setup_managed_dns() {
       echo "Not installing managed DNS"
       ;;
   esac
+}
+
+function setup_monitoring() {
+  if [ "${INSTALL_MONITORING}" = "true" ]; then
+    echo "Install monitoring"
+
+    helm upgrade \
+      --atomic \
+      --cleanup-on-fail \
+      --create-namespace \
+      --install \
+      --namespace="${MONITORING_NAMESPACE}" \
+      --repo=https://helm.simonemms.com \
+      --reset-values \
+      --set gitpodNamespace="${GITPOD_NAMESPACE}" \
+      --wait \
+      monitoring \
+      gitpod-monitoring
+  fi
 }
 
 function install() {
@@ -133,6 +155,7 @@ EOF
     cert-manager
 
   setup_managed_dns
+  setup_monitoring
 
   cat << EOF
 
@@ -194,6 +217,17 @@ A Records:
   ${DOMAIN} - ${SERVER_IP}
   *.${DOMAIN} - ${SERVER_IP}
   *.ws.${DOMAIN} - ${SERVER_IP}
+EOF
+  fi
+
+  if [ "${INSTALL_MONITORING}" = "true" ]; then
+  cat << EOF
+
+==========
+Monitoring
+==========
+
+Prometheus endpoint: http://monitoring-prometheus-prometheus.${MONITORING_NAMESPACE}.svc.cluster.local:9090
 EOF
   fi
 }
