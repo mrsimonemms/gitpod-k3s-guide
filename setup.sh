@@ -3,10 +3,6 @@
 set -euo pipefail
 
 DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
-if [ ! -f "${DIR}/.env" ]; then
-    echo "Missing ${DIR}/.env configuration file."
-    exit 1;
-fi
 
 function check_dependencies() {
   if ! command -v k3sup &> /dev/null; then
@@ -201,7 +197,10 @@ function uninstall() {
 
 cmd="${1:-}"
 set -a
-source "${DIR}/.env"
+if [ -f "${DIR}/.env" ]; then
+  echo "Loading configuration from ${DIR}/.env."
+  source "${DIR}/.env"
+fi
 set -a
 
 case "${cmd}" in
