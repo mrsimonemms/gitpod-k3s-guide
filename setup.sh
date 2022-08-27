@@ -186,7 +186,7 @@ function uninstall() {
   echo ""
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     for IP in ${IP_LIST//,/ }; do
-      ssh "${USER}@${IP}" k3s-uninstall.sh
+      ssh "${USER}@${IP}" k3s-uninstall.sh || true
     done
   fi
 }
