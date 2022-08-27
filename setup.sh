@@ -4,6 +4,9 @@ set -euo pipefail
 
 DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
 
+# Set default values
+HA_CLUSTER="${HA_CLUSTER:-false}"
+
 function check_dependencies() {
   if ! command -v k3sup &> /dev/null; then
     echo "k3sup not be found - please visit https://k3sup.dev for installation instructions"
