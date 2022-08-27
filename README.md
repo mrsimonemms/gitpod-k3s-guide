@@ -75,6 +75,11 @@ As k3s tends to use the internal IP address, you will need to manually configure
 
 Upon completion, it will print the config for the resources created and instructions on what to do next.
 
+### Monitoring
+
+You can optionally install a [monitoring application](https://github.com/MrSimonEmms/gitpod-monitoring) to
+provide observatibility for you cluster.
+
 ### Troubleshooting
 
 - Pods running out of resources
