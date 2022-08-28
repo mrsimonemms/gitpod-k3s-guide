@@ -75,9 +75,15 @@ function install() {
   echo "Install k3s with k3sup"
   SERVER_IP=
   JOIN_NODE=0
+  USE_LOCAL=false
   for IP in ${IP_LIST//,/ }; do
-    echo "Set the k3s config template"
-    ssh-keyscan "${IP}" >> ~/.ssh/known_hosts
+    if [ "${IP}" = "127.0.0.1" ]; then
+      echo "Using local node"
+      USE_LOCAL=true
+    else
+      echo "Set the k3s config template"
+      ssh-keyscan "${IP}" >> ~/.ssh/known_hosts
+    fi
 
     if [ "${MANAGED_DNS_PROVIDER:-}" == "selfsigned" ]; then
       cat << EOF > ./registries.yaml
@@ -99,6 +105,7 @@ EOF
       k3sup install \
         --cluster="${HA_CLUSTER}" \
         --ip "${IP}" \
+        --local="${USE_LOCAL}" \
         --local-path "${HOME}/.kube/config" \
         --k3s-extra-args="--disable traefik ${EXTRA_ARGS}" \
         --user "${USER}"
@@ -133,9 +140,15 @@ EOF
     ((JOIN_NODE=JOIN_NODE+1))
 
     echo "Install linux-headers"
-    ssh "${USER}@${IP}" "sudo apt-get update"
-    # shellcheck disable=SC2029
-    ssh "${USER}@${IP}" 'sudo apt-get install -y linux-headers-$(uname -r) linux-headers-generic'
+    if [ "${IP}" = "127.0.0.1" ]; then
+      sudo apt-get update
+      # shellcheck disable=SC2029
+      sudo apt-get install -y linux-headers-$(uname -r) linux-headers-generic
+    else
+      ssh "${USER}@${IP}" "sudo apt-get update"
+      # shellcheck disable=SC2029
+      ssh "${USER}@${IP}" 'sudo apt-get install -y linux-headers-$(uname -r) linux-headers-generic'
+    fi
   done
 
   kubectl get nodes -o wide
@@ -239,7 +252,11 @@ function uninstall() {
   echo ""
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     for IP in ${IP_LIST//,/ }; do
-      ssh "${USER}@${IP}" k3s-uninstall.sh || true
+      if [ "${IP}" = "127.0.0.1" ]; then
+        k3s-uninstall.sh || true
+      else
+        ssh "${USER}@${IP}" k3s-uninstall.sh || true
+      fi
     done
   fi
 }
