@@ -9,6 +9,7 @@ HA_CLUSTER="${HA_CLUSTER:-false}"
 INSTALL_MONITORING="${INSTALL_MONITORING:-false}"
 MONITORING_NAMESPACE=monitoring
 GITPOD_NAMESPACE="${GITPOD_NAMESPACE:-gitpod}"
+CONTEXT_NAME="${CONTEXT_NAME:-gitpod-k3s}"
 
 function check_dependencies() {
   if ! command -v k3sup &> /dev/null; then
@@ -104,11 +105,15 @@ EOF
 
       k3sup install \
         --cluster="${HA_CLUSTER}" \
+        --context="${CONTEXT_NAME}" \
         --ip "${IP}" \
         --local="${USE_LOCAL}" \
         --local-path "${HOME}/.kube/config" \
+        --merge \
         --k3s-extra-args="--disable traefik ${EXTRA_ARGS}" \
         --user "${USER}"
+
+      kubectl config use-context "${CONTEXT_NAME}"
 
       # Set any future nodes to join this node
       SERVER_IP="${IP}"
