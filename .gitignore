@@ -6,3 +6,4 @@ tmp
 gitpod-config.yaml
 gitpod.yaml
 registries.yaml
+.terraform

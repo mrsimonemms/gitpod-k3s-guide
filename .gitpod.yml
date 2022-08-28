@@ -23,9 +23,22 @@ tasks:
       brew install yq
       # Install KOTS
       curl https://kots.io/install | bash
+      # Install Terraform
+      brew install tfenv
+      tfenv install latest
+      tfenv use latest
       # Back to workspace
       cd -
+    command: |
+      for DIR in $(ls -d terraform/*); do
+        cd "${DIR}"
+        echo "Configuring Terraform in ${DIR}"
+        bash ".tfsetup.sh" || true
+        cd -
+      done
 
 vscode:
   extensions:
+    - donjayamanne.git-extension-pack
     - EditorConfig.EditorConfig
+    - hashicorp.terraform
