@@ -2,7 +2,7 @@
 
 Before starting the installation process, you need:
 
-- An Ubuntu 20.04 machine with SSH credentials
+- An Ubuntu 20.04/22.04 machine with SSH credentials
   - This must have ports 22 (SSH), 80 (HTTP), 443 (HTTPS) and 6443 (Kubernetes) exposed
 - A `.env` file or environment variables with basic details about the environment.
   - We provide an example of such file [here](.env.example)
