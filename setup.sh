@@ -53,6 +53,8 @@ function setup_monitoring() {
   if [ "${INSTALL_MONITORING}" = "true" ]; then
     echo "Install monitoring"
 
+    kubectl create namespace "${GITPOD_NAMESPACE}" || true
+
     helm upgrade \
       --atomic \
       --cleanup-on-fail \
@@ -65,6 +67,9 @@ function setup_monitoring() {
       --wait \
       monitoring \
       gitpod-monitoring
+  else
+    helm un -n "${MONITORING_NAMESPACE}" monitoring || true
+    kubectl delete namespace "${MONITORING_NAMESPACE}" || true
   fi
 }
 
@@ -238,15 +243,18 @@ A Records:
 EOF
   fi
 
-  if [ "${INSTALL_MONITORING}" = "true" ]; then
   cat << EOF
 
 ==========
 Monitoring
 ==========
 
-Prometheus endpoint: http://monitoring-prometheus-prometheus.${MONITORING_NAMESPACE}.svc.cluster.local:9090
 EOF
+
+  if [ "${INSTALL_MONITORING}" = "true" ]; then
+    echo "Prometheus endpoint: http://monitoring-prometheus-prometheus.${MONITORING_NAMESPACE}.svc.cluster.local:9090"
+  else
+    echo "Monitoring disabled"
   fi
 }
 
