@@ -10,6 +10,7 @@ INSTALL_MONITORING="${INSTALL_MONITORING:-false}"
 MONITORING_NAMESPACE=monitoring
 GITPOD_NAMESPACE="${GITPOD_NAMESPACE:-gitpod}"
 CONTEXT_NAME="${CONTEXT_NAME:-gitpod-k3s}"
+K3S_CHANNEL="${K3S_CHANNEL:-stable}"
 
 function check_dependencies() {
   if ! command -v k3sup &> /dev/null; then
@@ -115,6 +116,7 @@ EOF
         --local="${USE_LOCAL}" \
         --local-path "${HOME}/.kube/config" \
         --merge \
+        --k3s-channel="${K3S_CHANNEL}" \
         --k3s-extra-args="--disable traefik ${EXTRA_ARGS}" \
         --user "${USER}"
 
@@ -139,6 +141,7 @@ EOF
 
       k3sup join \
         --ip "${IP}" \
+        --k3s-channel="${K3S_CHANNEL}" \
         --k3s-extra-args="${NODE_EXTRA_ARGS}" \
         --server="${USE_SERVER}" \
         --server-ip "${SERVER_IP}" \
