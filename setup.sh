@@ -99,9 +99,14 @@ configs:
     tls:
       insecure_skip_verify: true
 EOF
-      scp ./registries.yaml "${USER}@${IP}:/tmp/registries.yaml"
-      ssh "${USER}@${IP}" "sudo mkdir -p /etc/rancher/k3s"
-      ssh "${USER}@${IP}" "sudo mv /tmp/registries.yaml /etc/rancher/k3s/registries.yaml"
+      if [ "${IP}" = "127.0.0.1" ]; then
+        sudo mkdir -p /etc/rancher/k3s
+        sudo cp ./registries.yaml /etc/rancher/k3s/registries.yaml
+      else
+        scp ./registries.yaml "${USER}@${IP}:/tmp/registries.yaml"
+        ssh "${USER}@${IP}" "sudo mkdir -p /etc/rancher/k3s"
+        ssh "${USER}@${IP}" "sudo mv /tmp/registries.yaml /etc/rancher/k3s/registries.yaml"
+      fi
     fi
 
     EXTRA_ARGS="--node-label=gitpod.io/workload_meta=true --node-label=gitpod.io/workload_ide=true --node-label=gitpod.io/workload_workspace_services=true --node-label=gitpod.io/workload_workspace_regular=true --node-label=gitpod.io/workload_workspace_headless=true"
