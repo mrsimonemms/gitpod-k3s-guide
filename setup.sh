@@ -103,9 +103,9 @@ EOF
         sudo mkdir -p /etc/rancher/k3s
         sudo cp ./registries.yaml /etc/rancher/k3s/registries.yaml
       else
-        scp ./registries.yaml "${USER}@${IP}:/tmp/registries.yaml"
-        ssh "${USER}@${IP}" "sudo mkdir -p /etc/rancher/k3s"
-        ssh "${USER}@${IP}" "sudo mv /tmp/registries.yaml /etc/rancher/k3s/registries.yaml"
+        scp ./registries.yaml "${SERVER_USER}@${IP}:/tmp/registries.yaml"
+        ssh "${SERVER_USER}@${IP}" "sudo mkdir -p /etc/rancher/k3s"
+        ssh "${SERVER_USER}@${IP}" "sudo mv /tmp/registries.yaml /etc/rancher/k3s/registries.yaml"
       fi
     fi
 
@@ -123,7 +123,7 @@ EOF
         --merge \
         --k3s-channel="${K3S_CHANNEL}" \
         --k3s-extra-args="--disable traefik ${EXTRA_ARGS}" \
-        --user "${USER}"
+        --user "${SERVER_USER}"
 
       kubectl config use-context "${CONTEXT_NAME}"
 
@@ -150,8 +150,8 @@ EOF
         --k3s-extra-args="${NODE_EXTRA_ARGS}" \
         --server="${USE_SERVER}" \
         --server-ip "${SERVER_IP}" \
-        --server-user "${USER}" \
-        --user "${USER}"
+        --server-user "${SERVER_USER}" \
+        --user "${SERVER_USER}"
     fi
 
     # Increment the JOIN_NODE
@@ -163,9 +163,9 @@ EOF
       # shellcheck disable=SC2029
       sudo apt-get install -y linux-headers-$(uname -r) linux-headers-generic
     else
-      ssh "${USER}@${IP}" "sudo apt-get update"
+      ssh "${SERVER_USER}@${IP}" "sudo apt-get update"
       # shellcheck disable=SC2029
-      ssh "${USER}@${IP}" 'sudo apt-get install -y linux-headers-$(uname -r) linux-headers-generic'
+      ssh "${SERVER_USER}@${IP}" 'sudo apt-get install -y linux-headers-$(uname -r) linux-headers-generic'
     fi
   done
 
@@ -276,7 +276,7 @@ function uninstall() {
       if [ "${IP}" = "127.0.0.1" ]; then
         k3s-uninstall.sh || true
       else
-        ssh "${USER}@${IP}" k3s-uninstall.sh || true
+        ssh "${SERVER_USER}@${IP}" k3s-uninstall.sh || true
       fi
     done
   fi
