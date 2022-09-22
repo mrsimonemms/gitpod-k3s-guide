@@ -6,7 +6,7 @@ Before starting the installation process, you need:
   - This must have ports 22 (SSH), 80 (HTTP), 443 (HTTPS) and 6443 (Kubernetes) exposed
 - A `.env` file or environment variables with basic details about the environment.
   - We provide an example of such file [here](.env.example)
-- [Docker](https://docs.docker.com/engine/install) installed on your machine, or better, a [Gitpod workspace](https://github.com/MrSimonEmms/gitpod-k3s-guide) :)
+- [Docker](https://docs.docker.com/engine/install) installed on your machine, or better, a [Gitpod workspace](https://gitpod.io/#https://github.com/MrSimonEmms/gitpod-k3s-guide) 😀
 
 <details>
 <summary>Example VM on GCP</summary>
