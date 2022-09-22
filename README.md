@@ -130,3 +130,10 @@ If you created any cloud resources you can delete them with the following:
   ```
   </details>
 
+## Retrieving credentials
+
+Sometimes, you just want to get the credentials
+
+```shell
+./setup.sh credentials
+```

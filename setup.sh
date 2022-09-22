@@ -4,6 +4,9 @@ set -euo pipefail
 
 DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
 
+# Ensure Kubernetes directory exists
+mkdir -p ${HOME}/.kube
+
 # Set default values
 HA_CLUSTER="${HA_CLUSTER:-false}"
 INSTALL_MONITORING="${INSTALL_MONITORING:-false}"
@@ -72,6 +75,30 @@ function setup_monitoring() {
     helm un -n "${MONITORING_NAMESPACE}" monitoring || true
     kubectl delete namespace "${MONITORING_NAMESPACE}" || true
   fi
+}
+
+function get_credentials() {
+  JOIN_NODE=0
+  for IP in ${IP_LIST//,/ }; do
+    if [ "${JOIN_NODE}" -eq 0 ]; then
+      echo "Downloading Kubernetes credentials from ${IP}"
+
+      k3sup install \
+        --merge \
+        --local-path "${HOME}/.kube/config" \
+        --context="${CONTEXT_NAME}" \
+        --ip "${IP}" \
+        --skip-install \
+        --user "${SERVER_USER}"
+
+      kubectl config use-context "${CONTEXT_NAME}"
+    fi
+
+    # Increment the JOIN_NODE
+    ((JOIN_NODE=JOIN_NODE+1))
+  done
+
+  kubectl get nodes -o wide
 }
 
 function install() {
@@ -295,6 +322,9 @@ fi
 set -a
 
 case "${cmd}" in
+  credentials )
+    get_credentials
+    ;;
   install )
     install
     ;;
