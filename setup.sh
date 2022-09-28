@@ -331,7 +331,7 @@ function uninstall() {
       if [ "${IP}" = "127.0.0.1" ]; then
         k3s-uninstall.sh || true
       else
-        ssh "${SERVER_USER}@${IP}" k3s-uninstall.sh || true
+        ssh "${SERVER_USER}@${IP}" k3s-uninstall.sh || k3s-agent-uninstall.sh || true
       fi
     done
   fi
