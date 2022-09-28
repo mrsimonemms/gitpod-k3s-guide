@@ -41,6 +41,16 @@ function setup_managed_dns() {
 
       envsubst < "${DIR}/assets/cloudflare.yaml" | kubectl apply -f -
       ;;
+    route53 )
+      echo "Installing Route 53 managed DNS"
+      kubectl create secret generic route53-api-secret \
+        -n cert-manager \
+        --from-literal=secret-access-key="${ROUTE53_SECRET_KEY}" \
+        --dry-run=client -o yaml | \
+        kubectl replace --force -f -
+
+      envsubst < "${DIR}/assets/route53.yaml" | kubectl apply -f -
+      ;;
     selfsigned )
       echo "A self-signed certificate will be created"
       ;;
@@ -224,6 +234,13 @@ case "${MANAGED_DNS_PROVIDER:-}" in
   cloudflare )
     cat << EOF
 Service: Cloudflare
+Issuer name: gitpod-issuer
+Issuer type: Cluster issuer
+EOF
+    ;;
+  route53 )
+    cat << EOF
+Service: Route 53
 Issuer name: gitpod-issuer
 Issuer type: Cluster issuer
 EOF
