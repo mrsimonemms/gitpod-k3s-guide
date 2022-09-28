@@ -28,4 +28,6 @@ tasks:
 
 vscode:
   extensions:
+    - donjayamanne.git-extension-pack
     - EditorConfig.EditorConfig
+    - HashiCorp.terraform
