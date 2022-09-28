@@ -1,16 +1,44 @@
 #!/bin/bash
 
+###
+# This file can be run locally or from a remote source:
+#
+# Local: ./setup.sh install
+# Remote: curl https://raw.githubusercontent.com/MrSimonEmms/gitpod-k3s-guide/main/setup.sh | CMD=install bash
+###
+
 set -euo pipefail
 
-DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
+USE_REMOTE_REPO=0
+if [ -z "${BASH_SOURCE:-}" ]; then
+  cmd="${CMD:-}"
+  DIR="${PWD}"
+  USE_REMOTE_REPO=1
+else
+  cmd="${1:-}"
+  DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
+fi
 
 # Set default values
+KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 HA_CLUSTER="${HA_CLUSTER:-false}"
 INSTALL_MONITORING="${INSTALL_MONITORING:-false}"
 MONITORING_NAMESPACE=monitoring
 GITPOD_NAMESPACE="${GITPOD_NAMESPACE:-gitpod}"
 CONTEXT_NAME="${CONTEXT_NAME:-gitpod-k3s}"
 K3S_CHANNEL="${K3S_CHANNEL:-stable}"
+REPO_RAW_URL="${REPO_RAW_URL:-https://raw.githubusercontent.com/MrSimonEmms/gitpod-k3s-guide/main}"
+
+# Ensure Kubernetes directory exists
+mkdir -p "$(dirname "${KUBECONFIG}")"
+
+function get_local_or_remote_file() {
+  if [ "${USE_REMOTE_REPO}" -eq 1 ]; then
+    echo "${REPO_RAW_URL}"
+  else
+    echo "${DIR}"
+  fi
+}
 
 function check_dependencies() {
   if ! command -v k3sup &> /dev/null; then
@@ -39,7 +67,7 @@ function setup_managed_dns() {
         --dry-run=client -o yaml | \
         kubectl replace --force -f -
 
-      envsubst < "${DIR}/assets/cloudflare.yaml" | kubectl apply -f -
+      envsubst < "$(get_local_or_remote_file)/assets/cloudflare.yaml" | kubectl apply -f -
       ;;
     route53 )
       echo "Installing Route 53 managed DNS"
@@ -84,10 +112,32 @@ function setup_monitoring() {
   fi
 }
 
+function get_credentials() {
+  JOIN_NODE=0
+  for IP in ${IP_LIST//,/ }; do
+    if [ "${JOIN_NODE}" -eq 0 ]; then
+      echo "Downloading Kubernetes credentials from ${IP}"
+
+      k3sup install \
+        --merge \
+        --local-path "${KUBECONFIG}" \
+        --context="${CONTEXT_NAME}" \
+        --ip "${IP}" \
+        --skip-install \
+        --user "${SERVER_USER}"
+
+      kubectl config use-context "${CONTEXT_NAME}"
+    fi
+
+    # Increment the JOIN_NODE
+    ((JOIN_NODE=JOIN_NODE+1))
+  done
+
+  kubectl get nodes -o wide
+}
+
 function install() {
   echo "Installing Gitpod to k3s cluster"
-
-  mkdir -p "${HOME}/.kube"
 
   echo "Install k3s with k3sup"
   SERVER_IP=
@@ -129,7 +179,7 @@ EOF
         --context="${CONTEXT_NAME}" \
         --ip "${IP}" \
         --local="${USE_LOCAL}" \
-        --local-path "${HOME}/.kube/config" \
+        --local-path "${KUBECONFIG}" \
         --merge \
         --k3s-channel="${K3S_CHANNEL}" \
         --k3s-extra-args="--disable traefik ${EXTRA_ARGS}" \
@@ -286,14 +336,19 @@ EOF
 function uninstall() {
   echo "Uninstalling Gitpod from k3s cluster"
 
-  read -p "Are you sure you want to delete: Gitpod (y/n)?" -n 1 -r
-  echo ""
+  if [ "${USE_REMOTE_REPO}" -eq 1 ]; then
+    REPLY="y"
+  else
+    read -p "Are you sure you want to delete: Gitpod (y/n)?" -n 1 -r
+    echo ""
+  fi
+
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     for IP in ${IP_LIST//,/ }; do
       if [ "${IP}" = "127.0.0.1" ]; then
         k3s-uninstall.sh || true
       else
-        ssh "${SERVER_USER}@${IP}" k3s-uninstall.sh || true
+        ssh "${SERVER_USER}@${IP}" k3s-uninstall.sh || k3s-agent-uninstall.sh || true
       fi
     done
   fi
@@ -303,8 +358,8 @@ function uninstall() {
 # Commands #
 ############
 
-cmd="${1:-}"
 set -a
+
 if [ -f "${DIR}/.env" ]; then
   echo "Loading configuration from ${DIR}/.env."
   source "${DIR}/.env"
@@ -312,6 +367,9 @@ fi
 set -a
 
 case "${cmd}" in
+  credentials )
+    get_credentials
+    ;;
   install )
     install
     ;;
