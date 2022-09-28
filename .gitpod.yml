@@ -2,29 +2,10 @@ github:
   prebuilds:
     # enable for the default branch (defaults to true)
     master: true
+    branches: true
 
-tasks:
-  - before: |
-      # Run tasks in tmp folder
-      cd /tmp
-      # Install kubectl - https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
-      curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-      sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-      rm kubectl
-      # Install Helm - https://helm.sh/docs/intro/install/
-      curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-      # Install k3sup - https://k3sup.dev
-      curl -sLS https://get.k3sup.dev | sh
-      sudo install k3sup /usr/local/bin/
-      rm k3sup
-      # Install envsubst
-      sudo apt-get install -y gettext-base
-      # Install yq
-      brew install yq
-      # Install KOTS
-      curl https://kots.io/install | bash
-      # Back to workspace
-      cd -
+image:
+  file: .gitpod/gitpod.Dockerfile
 
 vscode:
   extensions:
