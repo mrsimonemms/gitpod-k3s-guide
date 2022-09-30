@@ -1,0 +1,19 @@
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: gitpod-issuer
+spec:
+  acme:
+    email: $LETSENCRYPT_EMAIL
+    privateKeySecretRef:
+      name: issuer-account-key
+    server: https://acme-v02.api.letsencrypt.org/directory
+    solvers:
+      - dns01:
+          route53:
+            region: ${ROUTE53_REGION}
+            accessKeyID: ${ROUTE53_ACCESS_KEY}
+            secretAccessKeySecretRef:
+              name: route53-api-secret
+              key: secret-access-key
