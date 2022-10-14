@@ -67,7 +67,13 @@ function setup_managed_dns() {
         --dry-run=client -o yaml | \
         kubectl replace --force -f -
 
-      envsubst < "$(get_local_or_remote_file)/assets/cloudflare.yaml" | kubectl apply -f -
+
+      if [ "${USE_REMOTE_REPO}" -eq 1 ]; then
+        curl "$(get_local_or_remote_file)/assets/cloudflare.yaml" --output "/tmp/cloudflare.yaml"
+        envsubst < "/tmp/cloudflare.yaml" | kubectl apply -f -
+      else
+        envsubst < "${DIR}/assets/cloudflare.yaml" | kubectl apply -f -
+      fi
       ;;
     route53 )
       echo "Installing Route 53 managed DNS"
@@ -77,7 +83,12 @@ function setup_managed_dns() {
         --dry-run=client -o yaml | \
         kubectl replace --force -f -
 
-      envsubst < "${DIR}/assets/route53.yaml" | kubectl apply -f -
+      if [ "${USE_REMOTE_REPO}" -eq 1 ]; then
+        curl "$(get_local_or_remote_file)/assets/route53.yaml" --output "/tmp/route53.yaml"
+        envsubst < "/tmp/route53.yaml" | kubectl apply -f -
+      else
+        envsubst < "${DIR}/assets/route53.yaml" | kubectl apply -f -
+      fi
       ;;
     selfsigned )
       echo "A self-signed certificate will be created"
