@@ -67,12 +67,26 @@ function setup_managed_dns() {
         --dry-run=client -o yaml | \
         kubectl replace --force -f -
 
-
       if [ "${USE_REMOTE_REPO}" -eq 1 ]; then
         curl "$(get_local_or_remote_file)/assets/cloudflare.yaml" --output "/tmp/cloudflare.yaml"
         envsubst < "/tmp/cloudflare.yaml" | kubectl apply -f -
       else
         envsubst < "${DIR}/assets/cloudflare.yaml" | kubectl apply -f -
+      fi
+      ;;
+    gcp )
+      echo "Installing GCP managed DNS"
+      kubectl create secret generic clouddns-dns01-solver \
+        -n cert-manager \
+        --from-file=key.json="${GCP_SERVICE_ACCOUNT_KEY}" \
+        --dry-run=client -o yaml | \
+        kubectl replace --force -f -
+
+      if [ "${USE_REMOTE_REPO}" -eq 1 ]; then
+        curl "$(get_local_or_remote_file)/assets/gcp.yaml" --output "/tmp/gcp.yaml"
+        envsubst < "/tmp/gcp.yaml" | kubectl apply -f -
+      else
+        envsubst < "${DIR}/assets/gcp.yaml" | kubectl apply -f -
       fi
       ;;
     route53 )
@@ -295,6 +309,13 @@ case "${MANAGED_DNS_PROVIDER:-}" in
   cloudflare )
     cat << EOF
 Service: Cloudflare
+Issuer name: gitpod-issuer
+Issuer type: Cluster issuer
+EOF
+    ;;
+  gcp )
+    cat << EOF
+Service: GCP
 Issuer name: gitpod-issuer
 Issuer type: Cluster issuer
 EOF
