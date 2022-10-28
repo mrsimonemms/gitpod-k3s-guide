@@ -63,7 +63,7 @@ function setup_managed_dns() {
       echo "Installing Cloudflare managed DNS"
       kubectl create secret generic cloudflare-api-token \
         -n cert-manager \
-        --from-literal=api-token="${CLOUDFLARE_API_KEY}" \
+        --from-literal=api-token="${CLOUDFLARE_API_TOKEN}" \
         --dry-run=client -o yaml | \
         kubectl replace --force -f -
 
