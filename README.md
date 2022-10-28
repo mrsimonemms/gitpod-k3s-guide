@@ -2,11 +2,18 @@
 
 Before starting the installation process, you need:
 
-- An Ubuntu 20.04/22.04 machine with SSH credentials
-  - This must have ports 22 (SSH), 80 (HTTP), 443 (HTTPS) and 6443 (Kubernetes) exposed
+- Target building resources.
+  - Ubuntu 20.04/22.04 machine(s) with SSH credentials. 
+    - At least one, but also the script can also work for multiple nodes. The hostname of each node can be called `node0`, `node1`, etc.
+    - All nodes have ports 22 (SSH), 80 (HTTP), 443 (HTTPS) and 6443 (Kubernetes) exposed. All nodes are better to be in the same vlan so they can communicate with each other.
+    - Each node needs to have least 4 cores, 16GB RAM and 100GB storage.
+  - A domain and some wildcard subdomains managed by Cloudflare (free), GCP, or Route53 [see price](https://aws.amazon.com/route53/pricing/). Please see the "DNS and TLS configured" section in the [Gitpod docs](https://www.gitpod.io/docs/configure/self-hosted/latest/installing-gitpod) for more information. These DNS services will have and manage free Let's Encrypt certificates for you. If you choose not to use these commercial DNS services, you will need to use self-signed certificates and manage them manually.
 - A `.env` file or environment variables with basic details about the environment.
   - We provide an example of such file [here](.env.example)
-- [Docker](https://docs.docker.com/engine/install) installed on your machine, or better, a [Gitpod workspace](https://gitpod.io/#https://github.com/MrSimonEmms/gitpod-k3s-guide) 😀
+- Building environment. You can either:
+  - Build on a local Linux machine - needs to install kubectl, Helm, K3sup. You may need to clean your `${HOME}/.kube` directory if there was a previous `gitpod-k3s` entry. 
+  - Use [Docker](https://docs.docker.com/engine/install) installed on your machine and Docker file is at .gitpod/gitpod.Dockerfile.
+  - Even better, use a [Gitpod workspace](https://gitpod.io/#https://github.com/MrSimonEmms/gitpod-k3s-guide)😀.
 
 <details>
 <summary>Example VM on GCP</summary>
