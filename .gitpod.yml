@@ -7,6 +7,17 @@ github:
 image:
   file: .gitpod/gitpod.Dockerfile
 
+tasks:
+  - command: |
+      # Install commitlint
+      npm i -g @commitlint/{config-conventional,cli}
+
+      # Install husky
+      npm i -g husky
+
+      # Activate hooks
+      husky install
+
 vscode:
   extensions:
     - donjayamanne.git-extension-pack

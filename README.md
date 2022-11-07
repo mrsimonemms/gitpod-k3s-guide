@@ -3,7 +3,7 @@
 Before starting the installation process, you need:
 
 - Target building resources.
-  - Ubuntu 20.04/22.04 machine(s) with SSH credentials. 
+  - Ubuntu 20.04/22.04 machine(s) with SSH credentials.
     - At least one, but also the script can also work for multiple nodes. The hostname of each node can be called `node0`, `node1`, etc.
     - All nodes have ports 22 (SSH), 80 (HTTP), 443 (HTTPS) and 6443 (Kubernetes) exposed. All nodes are better to be in the same vlan so they can communicate with each other.
     - Each node needs to have least 4 cores, 16GB RAM and 100GB storage.
@@ -11,7 +11,7 @@ Before starting the installation process, you need:
 - A `.env` file or environment variables with basic details about the environment.
   - We provide an example of such file [here](.env.example)
 - Building environment. You can either:
-  - Build on a local Linux machine - needs to install kubectl, Helm, K3sup. You may need to clean your `${HOME}/.kube` directory if there was a previous `gitpod-k3s` entry. 
+  - Build on a local Linux machine - needs to install kubectl, Helm, K3sup. You may need to clean your `${HOME}/.kube` directory if there was a previous `gitpod-k3s` entry.
   - Use [Docker](https://docs.docker.com/engine/install) installed on your machine and Docker file is at .gitpod/gitpod.Dockerfile.
   - Even better, use a [Gitpod workspace](https://gitpod.io/#https://github.com/MrSimonEmms/gitpod-k3s-guide)😀.
 
@@ -54,6 +54,7 @@ gcloud compute config-ssh
 #
 # ssh gitpod-k3s.us-west1-c.adrien-self-hosted-testing-5k4
 ```
+
 </details>
 
 ## DNS and TLS
@@ -76,9 +77,10 @@ are supported - it is assumed that all nodes are configured identically.
 This process takes about 5 minutes. This will configure your k3s instance so it can accept a Gitpod installation.
 
 As k3s tends to use the internal IP address, you will need to manually configure A records for:
- - `$DOMAIN`
- - `*.$DOMAIN`
- - `*.ws.$DOMAIN`
+
+- `$DOMAIN`
+- `*.$DOMAIN`
+- `*.ws.$DOMAIN`
 
 Upon completion, it will print the config for the resources created and instructions on what to do next.
 
@@ -116,6 +118,7 @@ provide observatibility for you cluster.
   kubectl get certificate
   NAME                        READY   SECRET                      AGE
   https-certificates          True    https-certificates          5m
+  ```
 
 ## Destroy the resources
 
@@ -135,6 +138,7 @@ If you created any cloud resources you can delete them with the following:
   gcloud compute firewall-rules delete k3s --quiet
   gcloud compute instances delete gitpod-k3s --quiet
   ```
+
   </details>
 
 ## Retrieving credentials
@@ -144,3 +148,9 @@ Sometimes, you just want to get the credentials
 ```shell
 ./setup.sh credentials
 ```
+
+## Contributing
+
+Contributions are always welcome. Please raise an issue first before raising a pull request.
+
+Commit messages must adhere to the [Conventional Commit format](https://www.conventionalcommits.org/en/v1.0.0/).
