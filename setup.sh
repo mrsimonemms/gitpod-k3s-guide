@@ -378,9 +378,11 @@ function uninstall() {
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     for IP in ${IP_LIST//,/ }; do
       if [ "${IP}" = "127.0.0.1" ]; then
+        # Local installations are always single node setups
         k3s-uninstall.sh || true
       else
-        ssh "${SERVER_USER}@${IP}" k3s-uninstall.sh || k3s-agent-uninstall.sh || true
+        # Remote installations may be server or agent
+        ssh "${SERVER_USER}@${IP}" "k3s-uninstall.sh || k3s-agent-uninstall.sh || true"
       fi
     done
   fi
