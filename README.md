@@ -120,6 +120,19 @@ provide observatibility for you cluster.
   https-certificates          True    https-certificates          5m
   ```
 
+## Removing a node
+
+Remove a node from the cluster by running:
+
+```shell
+./setup.sh delete-node <node name>
+```
+
+### Warnings
+
+- If run on a control-plane node, this may have severe negative consequences for your cluster's long-term health.
+- This will only remove the node from the cluster. It does not uninstall k3s from the machine or delete the VM.
+
 ## Destroy the resources
 
 Remove k3s from your machine by running:

@@ -57,6 +57,43 @@ function check_dependencies() {
   fi
 }
 
+function delete_node() {
+  echo "Deleting node from cluster"
+
+  NAME="${1}"
+
+  if [ -z "${NAME}" ]; then
+    echo "Node name must be specified"
+    exit 1
+  fi
+
+  if [ "${USE_REMOTE_REPO}" -eq 1 ]; then
+    REPLY="y"
+  else
+    read -p "Are you sure you want to delete node: ${NAME} (y/n)?" -n 1 -r
+    echo ""
+  fi
+
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    if ! kubectl get nodes "${NAME}" > /dev/null 2>&1; then
+      echo "Unknown node: ${NAME}"
+      exit 1
+    fi
+
+    kubectl get nodes
+
+    echo "Draining node"
+    kubectl drain "${NAME}" --ignore-daemonsets --delete-local-data
+
+    echo "Deleting node"
+    kubectl delete node "${NAME}"
+
+    kubectl get nodes
+
+    echo "Node removed from cluster: $NAME"
+  fi
+}
+
 function setup_managed_dns() {
   case "${MANAGED_DNS_PROVIDER:-}" in
     cloudflare )
@@ -371,7 +408,7 @@ function uninstall() {
   if [ "${USE_REMOTE_REPO}" -eq 1 ]; then
     REPLY="y"
   else
-    read -p "Are you sure you want to delete: Gitpod (y/n)?" -n 1 -r
+    read -p "Are you sure you want to delete: Gitpod (y/N)?" -n 1 -r
     echo ""
   fi
 
@@ -403,6 +440,9 @@ set -a
 case "${cmd}" in
   credentials )
     get_credentials
+    ;;
+  delete-node )
+    delete_node "${2:-}"
     ;;
   install )
     install
