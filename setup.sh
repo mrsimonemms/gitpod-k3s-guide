@@ -70,7 +70,7 @@ function delete_node() {
   if [ "${USE_REMOTE_REPO}" -eq 1 ]; then
     REPLY="y"
   else
-    read -p "Are you sure you want to delete node: ${NAME} (y/n)?" -n 1 -r
+    read -p "Are you sure you want to delete node: ${NAME} (y/N)?" -n 1 -r
     echo ""
   fi
 
