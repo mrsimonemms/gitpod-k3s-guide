@@ -231,7 +231,7 @@ EOF
       fi
     fi
 
-    EXTRA_ARGS="--node-label=gitpod.io/workload_meta=true --node-label=gitpod.io/workload_ide=true --node-label=gitpod.io/workload_workspace_services=true --node-label=gitpod.io/workload_workspace_regular=true --node-label=gitpod.io/workload_workspace_headless=true"
+    EXTRA_ARGS="--node-label=gitpod.io/workload_meta=true --node-label=gitpod.io/workload_ide=true --node-label=gitpod.io/workload_services=true --node-label=gitpod.io/workload_workspace_regular=true --node-label=gitpod.io/workload_workspace_headless=true"
 
     if [ "${JOIN_NODE}" -eq 0 ]; then
       echo "Installing k3s to node ${IP}"
