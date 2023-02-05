@@ -1,5 +1,7 @@
 # Running Gitpod in [k3s](https://k3s.io)
 
+> Archived: please see [Gitpod Self-Hosted](https://github.com/mrsimonemms/gitpod-self-hosted) instead
+
 Before starting the installation process, you need:
 
 - Target building resources.
